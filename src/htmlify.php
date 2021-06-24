@@ -77,7 +77,8 @@ class Line
     public function _processLine() : int { // kept public for tests
         /*  a.nodrum href=# data-src=mysong 'mysong' */
         // look for text by splitting on "'"
-        // $text = 
+        $text = explode("'", $this->raw_line, 2);
+        print_r($text);
         // get leading spaces to determine level
 
         // remove leading spaces
@@ -90,6 +91,7 @@ class Line
         // other parts are attributes; wrap attribute values in ''
 
         // return the level
+        return $this->level;
     }
 
     public function getHtml() : array {

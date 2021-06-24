@@ -25,6 +25,12 @@ function test_line_processAttribute_success2() : bool {
     return assert_equal($attr, "data-src='mysong'");
 }
 
+function test_line_processLine_success() : bool {
+    $line = new Line("h2 'Something went wrong!'");
+    $level = $line->_processLine();
+    return assert_equal($level, 0);
+}
+
 function test_line_processAttribute_exception() : bool {
     $line = new Line("");
     return assert_exception(dirname(__DIR__, 2)."/src/htmlify.php", 
