@@ -96,6 +96,12 @@ function test_htmlify_constructor() : bool {
     return true;
 }
 
+function test_htmlify_processBlock() : bool {
+    $htmlify = new Htmlify("text");
+    $htmlify->_processBlock();
+    return true;
+}
+
 /*** run test suite from current directory 
  * TIP: put this code into its own file if using more than one
  * test file. Change __DIR__ if storing test files in different 

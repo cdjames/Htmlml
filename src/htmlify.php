@@ -225,6 +225,7 @@ class Htmlify
     private $html;
     private $level;
     private $top_node;
+    const LINE_DELIM = ",,,";
 
     public function __construct(string $raw_block) {
         $this->raw_block = $raw_block;
@@ -238,7 +239,8 @@ class Htmlify
     public function _processBlock() {
         $tn = &$this->top_node;
         // separate into separate lines
-
+        $lines = explode(self.LINE_DELIM, $this->raw_block);
+        log_print_r($lines);
         // check size and operate on each line
             
             // create a Line object
