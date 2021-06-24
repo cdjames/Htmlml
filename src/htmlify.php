@@ -1,6 +1,28 @@
 <?php
 namespace htmlify;
 
+const SPACE = " ";
+const PERIOD = ".";
+const HASH = "#";
+const EQUALS = "=";
+const SQUOTE = "'";
+const START_TAG_OPEN = "<";
+const END_TAG_OPEN = "</";
+const TAG_CLOSE = ">";
+const TESTING = 0;
+
+function log_print_r($item) {
+    if (TESTING === 1) {
+        print_r($item);
+    }
+}
+
+function log($string) {
+    if (TESTING === 1) {
+        echo $string;
+    }
+}
+
 class Line
 {
     private $raw_line;
@@ -11,10 +33,12 @@ class Line
     private $attributes;
     private $text;
     private $html;
+    const TXT_DELIM = "text=";
+    const SPACE_PTRN = "/^\s+/";
 
     public function __construct(string $raw_line)
     {
-        $this->raw_line = $raw_line;
+        $this->raw_line = rtrim($raw_line); // no need to keep spaces at the end
         $this->level = 0;
         $this->tag = "";
         $this->classes = [];
@@ -26,76 +50,108 @@ class Line
 
     public function _createHtml() { // kept public for tests
         // assemble html opening starting from tag
-        $html[0] = "<$this->tag";
+        $this->html[0] = START_TAG_OPEN.$this->tag;
 
-        if ($this->id != "") {
-            $html[0] .= " id='$this->id'";
+        if (strlen($this->id) > 0) {
+            $this->html[0] .= SPACE."id".EQUALS.SQUOTE.$this->id.SQUOTE;
         } 
         
-        if (count($this->classes)) {
-            $html[0] .= " class='";
+        if (count($this->classes) > 0) {
+            $this->html[0] .= SPACE."class".EQUALS.SQUOTE;
 
             foreach ($this->classes as $key => $class) {
                 if ($key != 0) {
-                    $html[0] .= " ";
+                    $this->html[0] .= SPACE;
                 }
-                $html[0] .= $class;
+                $this->html[0] .= $class;
             }
 
-            $html[0] .= "'";
+            $this->html[0] .= SQUOTE;
         }
         
-        if (count($this->attributes)) {
-            foreach ($this->attributes as $attr) {
+        if (count($this->attributes) > 0) {
+            $this->html[0] .= SPACE;
+
+            foreach ($this->attributes as $key => $attr) {
                 if ($key != 0) {
-                    $html[0] .= " ";
+                    $this->html[0] .= SPACE;
                 }
-                $html[0] .= $attr;
+                $this->html[0] .= $attr;
             }
         }
 
-        if ($this->text != "") {
-            $html[0] .= $this->text;
+        $this->html[0] .= TAG_CLOSE;
+
+        if (strlen($this->text) > 0) {
+            $this->html[0] .= $this->text;
         } 
 
-        $html[0] .= ">";
-
-        $html[1] = "</$this->tag>";
+        $this->html[1] = END_TAG_OPEN.$this->tag.TAG_CLOSE;
     }
 
     public function _processAttribute(string $attr) : string { // kept public for tests
         // surround text after '=' with single quotes
-        $parts = explode("=", $attr, 2);
+        $parts = explode(EQUALS, $attr, 2);
         if ($parts === false || count($parts) < 2) {
             // not a valid attribute
             throw new \Exception("bad attribute");           
         }
         
-        return $parts[0]."='".$parts[1]."'";
+        return $parts[0].EQUALS.SQUOTE.$parts[1].SQUOTE;
     }
 
     public function _processLine() : int { // kept public for tests
         /*  a.nodrum href=# data-src=mysong 'mysong' */
-        // look for text by splitting on "'"
-        $text = explode("'", $this->raw_line, 2);
-        print_r($text);
+        // look for text by splitting on "text="
+        $txt_parts = explode(self::TXT_DELIM, $this->raw_line, 2);
+        log_print_r($txt_parts);
+        if (count($txt_parts) > 1) {
+            $this->text = $txt_parts[1];
+        }
+
+        $line = rtrim($txt_parts[0]); // get rid of trailing spaces           
+        
         // get leading spaces to determine level
+        $starts_w_spaces = preg_match(self::SPACE_PTRN, $line, $spaces);
+        if ($starts_w_spaces > 0) {
+            $this->level = strlen($spaces[0]);
+        }
 
-        // remove leading spaces
+        // remove leading spaces, no longer needed
+        $line = ltrim($line);
 
-        /* a.nodrum href=# data-src=mysong */
+        /* a .nodrum #mya href=# data-src=mysong */
         // split on spaces to get parts
+        $all_parts = explode(SPACE, $line);
+        log_print_r($all_parts);
 
-        // first part is tag plus classes and id
+        // first part is tag
+        $this->tag = array_shift($all_parts);
 
-        // other parts are attributes; wrap attribute values in ''
+        // other parts are classes, ids, and attributes; wrap attribute values in ''
+        foreach ($all_parts as $token) {
+            $token = trim($token);
+            if (strlen($token)) {
+                if (strpos($token, PERIOD) === 0) {
+                    $this->classes []= ltrim($token, PERIOD);
+                } else if (strpos($token, HASH) === 0) {
+                    $this->id = ltrim($token, HASH);
+                } else {
+                    $this->attributes []= $this->_processAttribute($token);
+                }
+            }
+        }
+        log("id: ");
+        log_print_r($this->id);
+        log("attributes: ");
+        log_print_r($this->attributes);
 
         // return the level
         return $this->level;
     }
 
     public function getHtml() : array {
-        return $html;
+        return $this->html;
     }
 }
 
@@ -132,10 +188,13 @@ $error_files = "mysong and yoursong";
 
 $var = "
 li.added ref=0 >
- a.nodrum href=# data-src=$no_path_ext '$trackname'";
+ a.nodrum href=# data-src=$no_path_ext text=$trackname";
 
 $var2 = "
 div#success_wrapper >
  div#error >
-  h2 'Something went wrong! ".$error_files." were not uploaded because they were too large! Please try again or contact the server admin.'";
+  h2 text=Something went wrong! ".$error_files." were not uploaded because they were too large! Please try again or contact the server admin.";
+
+  $line = new Line("  a .nodrum href=# data-src=mysong");
+  $level = $line->_processLine();
 ?>

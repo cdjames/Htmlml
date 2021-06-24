@@ -25,17 +25,49 @@ function test_line_processAttribute_success2() : bool {
     return assert_equal($attr, "data-src='mysong'");
 }
 
-function test_line_processLine_success() : bool {
-    $line = new Line("h2 'Something went wrong!'");
-    $level = $line->_processLine();
-    return assert_equal($level, 0);
-}
-
 function test_line_processAttribute_exception() : bool {
     $line = new Line("");
     return assert_exception(dirname(__DIR__, 2)."/src/htmlify.php", 
                                                 '\htmlify\Line::_processAttribute', 
                                                 array("ref0"));
+}
+
+function test_line_processLine_success() : bool {
+    $line = new Line(" h2  t=Something went wrong!");
+    $level = $line->_processLine();
+    return assert_equal($level, 1);
+}
+
+function test_line_processLine_success2() : bool {
+    $line = new Line("  a .nodrum href=# data-src=mysong");
+    $level = $line->_processLine();
+    return assert_equal($level, 2);
+}
+
+function test_line_processLine_success3() : bool {
+    $line = new Line("a .nodrum #mya href=# data-src=mysong t=This is the text");
+    $level = $line->_processLine();
+    return assert_equal($level, 0);
+}
+
+function test_line__createHtml_success() : bool {
+    $line = new Line("a .nodrum .yermom #mya href=# data-src=mysong t=This is the text");
+    $level = $line->_processLine();
+    $line->_createHtml();
+    $html = $line->getHtml();
+
+    $success_html = "<a id='mya' class='nodrum yermom' href='#' data-src='mysong'>This is the text</a>";
+    return assert_equal(implode("", $html), $success_html);
+}
+
+function test_line__createHtml_success2() : bool {
+    $line = new Line("h2 t=It seems to have worked. <i t=your file> should now be at <a .cool href=google.com t=the url>");
+    $level = $line->_processLine();
+    $line->_createHtml();
+    $html = $line->getHtml();
+
+    $success_html = "<h2>It seems to have worked. <i>your file</i> should now be at <a class='cool' href='google.com'>the url";
+    return assert_equal(implode("", $html), $success_html);
 }
 
 /*** run test suite from current directory 
