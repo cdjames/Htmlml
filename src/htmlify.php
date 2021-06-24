@@ -38,7 +38,7 @@ class Line
     private $html;
     const TXT_DELIM = "t=";
     const SPACE_PTRN = "/^\s+/";
-    const EMBEDDED_TAG_PTRN = "/<\s*?.*?>/";
+    const EMBEDDED_TAG_PTRN = "/<\s*?.*?>+/";
 
     public function __construct(string $raw_line)
     {
@@ -127,7 +127,7 @@ class Line
         /* a .nodrum #mya href=# data-src=mysong */
         // split on spaces to get parts
         $all_parts = explode(SPACE, $line);
-        log_print_r($all_parts);
+        // log_print_r($all_parts);
 
         // first part is tag
         $this->tag = array_shift($all_parts);
@@ -163,8 +163,10 @@ class Line
         if ($has_sub_items > 0) {
             foreach ($matches[0] as $new_line) {
                 // remove the tagging
-                $trimmed = ltrim($new_line, "< ");
-                $trimmed = rtrim($trimmed, "> ");
+                $trimmed = ltrim($new_line, "< "); // trim first chevron and spaces from left side
+                $trimmed = rtrim($trimmed); // trim spaces from right side
+                $trimmed = substr($trimmed, 0, -1); // pop off one chevron from the right side
+                // log("trimmed=".$trimmed);
 
                 // recursively process the embedded line
                 $line = new Line($trimmed);

@@ -71,6 +71,16 @@ function test_line__createHtml_embedded_tags_success() : bool {
     return assert_equal(implode("", $html), $success_html);
 }
 
+function test_line__createHtml_embedded_tags_success2() : bool {
+    $line = new Line("h2 t=It seems to have worked. <i t=your <b t=file>> should now be at < a .cool href=google.com t=the url>");
+    $level = $line->_processLine();
+    $line->_createHtml();
+    $html = $line->getHtml();
+
+    $success_html = "<h2>It seems to have worked. <i>your <b>file</b></i> should now be at <a class='cool' href='google.com'>the url</a></h2>";
+    return assert_equal(implode("", $html), $success_html);
+}
+
 /*** run test suite from current directory 
  * TIP: put this code into its own file if using more than one
  * test file. Change __DIR__ if storing test files in different 
