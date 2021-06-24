@@ -9,7 +9,7 @@ const SQUOTE = "'";
 const START_TAG_OPEN = "<";
 const END_TAG_OPEN = "</";
 const TAG_CLOSE = ">";
-const TESTING = 0;
+const TESTING = 1;
 
 function log_print_r($item) {
     if (TESTING === 1) {
@@ -17,9 +17,12 @@ function log_print_r($item) {
     }
 }
 
-function log($string) {
+function log($string, $newline = true) {
     if (TESTING === 1) {
         echo $string;
+        if ($newline) {
+            echo "\n";
+        }
     }
 }
 
@@ -33,8 +36,9 @@ class Line
     private $attributes;
     private $text;
     private $html;
-    const TXT_DELIM = "text=";
+    const TXT_DELIM = "t=";
     const SPACE_PTRN = "/^\s+/";
+    const EMBEDDED_TAG_PTRN = "/<\s*?.*?>/";
 
     public function __construct(string $raw_line)
     {
@@ -104,9 +108,9 @@ class Line
         /*  a.nodrum href=# data-src=mysong 'mysong' */
         // look for text by splitting on "text="
         $txt_parts = explode(self::TXT_DELIM, $this->raw_line, 2);
-        log_print_r($txt_parts);
+        // log_print_r($txt_parts);
         if (count($txt_parts) > 1) {
-            $this->text = $txt_parts[1];
+            $this->_processText($txt_parts[1]);
         }
 
         $line = rtrim($txt_parts[0]); // get rid of trailing spaces           
@@ -141,13 +145,40 @@ class Line
                 }
             }
         }
-        log("id: ");
-        log_print_r($this->id);
-        log("attributes: ");
-        log_print_r($this->attributes);
+        // log("id: ");
+        // log_print_r($this->id);
+        // log("attributes: ");
+        // log_print_r($this->attributes);
 
         // return the level
         return $this->level;
+    }
+
+    public function _processText($txt_parts) {
+        // look inside for embedded items
+        /* It seems to have worked. <i t=your file> should now be at <a .cool href=google.com t=the url> */
+        $full_line = $txt_parts;
+
+        $has_sub_items = preg_match_all(self::EMBEDDED_TAG_PTRN, $full_line, $matches);
+        if ($has_sub_items > 0) {
+            foreach ($matches[0] as $new_line) {
+                // remove the tagging
+                $trimmed = ltrim($new_line, "< ");
+                $trimmed = rtrim($trimmed, "> ");
+
+                // recursively process the embedded line
+                $line = new Line($trimmed);
+                $line->_processLine();
+                $line->_createHtml();
+                $html = $line->getHtml();
+
+                $full_line = preg_replace("/".$new_line."/", implode("", $html), $full_line);
+                // log("result=$full_line");
+            }
+        }
+        
+        $this->text = $full_line;
+        // log($this->text);
     }
 
     public function getHtml() : array {
@@ -195,6 +226,6 @@ div#success_wrapper >
  div#error >
   h2 text=Something went wrong! ".$error_files." were not uploaded because they were too large! Please try again or contact the server admin.";
 
-  $line = new Line("  a .nodrum href=# data-src=mysong");
-  $level = $line->_processLine();
+//   $line = new Line("  a .nodrum href=# data-src=mysong");
+//   $level = $line->_processLine();
 ?>

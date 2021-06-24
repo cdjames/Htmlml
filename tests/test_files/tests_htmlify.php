@@ -8,6 +8,7 @@ require_once(dirname(__DIR__, 1)."/tests.php"); // test framework
 require_once(dirname(__DIR__, 2)."/src/htmlify.php"); // functions to test
 
 /*** string tests ***/
+
 function test_line_constructor() : bool {
     $line = new Line("");
     return true;  
@@ -60,13 +61,13 @@ function test_line__createHtml_success() : bool {
     return assert_equal(implode("", $html), $success_html);
 }
 
-function test_line__createHtml_success2() : bool {
-    $line = new Line("h2 t=It seems to have worked. <i t=your file> should now be at <a .cool href=google.com t=the url>");
+function test_line__createHtml_embedded_tags_success() : bool {
+    $line = new Line("h2 t=It seems to have worked. <i t=your file> should now be at < a .cool href=google.com t=the url>");
     $level = $line->_processLine();
     $line->_createHtml();
     $html = $line->getHtml();
 
-    $success_html = "<h2>It seems to have worked. <i>your file</i> should now be at <a class='cool' href='google.com'>the url";
+    $success_html = "<h2>It seems to have worked. <i>your file</i> should now be at <a class='cool' href='google.com'>the url</a></h2>";
     return assert_equal(implode("", $html), $success_html);
 }
 
