@@ -24,7 +24,7 @@ class Line
         $this->html = [2];
     }
 
-    private function createHtml() {
+    public function _createHtml() { // kept public for tests
         // assemble html opening starting from tag
         $html[0] = "<$this->tag";
 
@@ -63,22 +63,21 @@ class Line
         $html[1] = "</$this->tag>";
     }
 
-    private function processAttribute(string $attr) : string {
+    public function _processAttribute(string $attr) : string { // kept public for tests
         // surround text after '=' with single quotes
-        $parts = explode("=", $attr, 1);
-        if ($parts === false || !count($parts)) {
+        $parts = explode("=", $attr, 2);
+        if ($parts === false || count($parts) < 2) {
             // not a valid attribute
-            throw new \Exception("bad attribute", 1, __FILE__, __LINE__);           
+            throw new \Exception("bad attribute");           
         }
         
         return $parts[0]."='".$parts[1]."'";
     }
 
-    private function processLine() : int {
+    public function _processLine() : int { // kept public for tests
         /*  a.nodrum href=# data-src=mysong 'mysong' */
-
         // look for text by splitting on "'"
-
+        // $text = 
         // get leading spaces to determine level
 
         // remove leading spaces

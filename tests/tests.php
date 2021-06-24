@@ -8,7 +8,8 @@ namespace Tests\Assertions {
         assert_options(ASSERT_BAIL, 1);
     }
 
-    function assert_exception(string $function, Array $args=[], string $e_msg="") : bool {
+    function assert_exception(string $file, string $function, Array $args=[], string $e_msg="") : bool {
+        require_once($file);
         $STR_PREAMBLE = "[".__FUNCTION__."] ";
         
         $result = 0;
@@ -23,7 +24,7 @@ namespace Tests\Assertions {
                     $result = 1;
                 }
             }
-        } finally {
+        } finally {            
             return assert($result===1, $STR_PREAMBLE."$function failed with args: ".implode(", ", $args));
         }
     }
