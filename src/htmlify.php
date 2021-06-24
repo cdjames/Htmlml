@@ -186,23 +186,114 @@ class Line
         }
         return $this->html;
     }
+
+    public function getLevel() : array {
+        return $this->level;
+    }
 }
 
-// class Htmlify
-// {
-//     private $num_passed;
-//     private $num_runs;
-//     private $func;
-//     private $args;
+class Node 
+{
+    public $line;
+    public $children;
+    private $parent;
 
-//     public function __construct(string $function, Array $args=[])
-//     {
-//         $this->num_passed = 0;
-//         $this->num_runs = 0;
-//         $this->func = $function;
-//         $this->args = $args;
-//     }
-// }
+    public function __construct($line, &$parent=null) {
+        $this->line = $line;
+        $this->parent = $parent;
+        $this->children = [];
+    }
+
+    public function addChild($node) {
+        $this->children []= $node;
+    }
+    
+    public function hasChildren() : bool {
+        return (bool)count($this->children);
+    }
+
+    public function getParent() {
+        return $parent;
+    }
+}
+
+class Htmlify
+{
+    private $raw_block;
+    private $openings;
+    private $endings;
+    private $html;
+    private $level;
+    private $top_node;
+
+    public function __construct(string $raw_block) {
+        $this->raw_block = $raw_block;
+        $this->openings = array(array());
+        $this->endings = array(array());
+        $this->html = "";
+        $this->level = 0;
+        $this->top_node = new Node(null);
+    }
+
+    public function _processBlock() {
+        $tn = &$this->top_node;
+        // separate into separate lines
+
+        // check size and operate on each line
+            
+            // create a Line object
+
+            // get leading spaces to determine level
+
+            // add line to current node depending on level
+            /*
+                div .toplevel
+                 div .nextlevel #main
+                  span t=some text
+                 div .anotherlevel
+                  p t=other text
+                =>
+                format:
+                line: Line(), children: []
+                node0 = line: div .toplevel, children: [node1, node3]
+                node1 = line: div .nextlevel #main, children: [node2]
+                node2 = line: span t=some text, children: []
+                node3 = line: div .anotherlevel, children: [node4]
+                node4 = line: p t=other text, children: []
+            */
+
+            // save deepest level
+    }
+
+    public function _createHtml() {
+        /*
+            div .toplevel
+             div .nextlevel #main
+              span t=some text
+             div .anotherlevel
+              p t=other text
+            =>
+            format:
+            line: Line(), children: []
+            node0 = line: div .toplevel, children: [node1, node3]
+            node1 = line: div .nextlevel #main, children: [node2]
+            node2 = line: span t=some text, children: []
+            node3 = line: div .anotherlevel, children: [node4]
+            node4 = line: p t=other text, children: []
+        */
+
+        // Walk to lowest level and assemble from there
+        /*
+            if (no children)
+                return assembled html
+            else
+                for all node0 children
+                    thislevel += recursiveCall(child) 
+                wrap all with this level
+                return this level assembled html
+        */
+    }
+}
 
 function htmlify(string $markup)
 {
@@ -228,6 +319,4 @@ div#success_wrapper >
  div#error >
   h2 text=Something went wrong! ".$error_files." were not uploaded because they were too large! Please try again or contact the server admin.";
 
-//   $line = new Line("  a .nodrum href=# data-src=mysong");
-//   $level = $line->_processLine();
 ?>

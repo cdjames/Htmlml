@@ -1,5 +1,7 @@
 <?php
 use \htmlify\Line;
+use \htmlify\Htmlify;
+use \htmlify\Node;
 use \Tests\TestSuite;
 use \Tests\en_mode;
 use function \Tests\Assertions\assert_equal;
@@ -73,6 +75,25 @@ function test_line__createHtml_embedded_tags_success2() : bool {
 
     $success_html = "<h2>It seems to have worked. <i>your <b>file</b></i> should now be at <a class='cool' href='google.com'>the url</a></h2>";
     return assert_equal(implode("", $html), $success_html);
+}
+
+function test_node_constructor() : bool {
+    $node = new Node(null);
+
+    return true;
+}
+
+function test_node_constructor_with_parent() : bool {
+    $node = new Node(null);
+    $node2 = new Node(null,$node);
+
+    return true;
+}
+
+function test_htmlify_constructor() : bool {
+    $htmlify = new Htmlify("text");
+
+    return true;
 }
 
 /*** run test suite from current directory 
