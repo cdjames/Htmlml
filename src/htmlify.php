@@ -49,7 +49,8 @@ class Line
         $this->id = "";
         $this->attributes = [];
         $this->text = "";
-        $this->html = [2];
+        $this->html = [];
+        $this->_processLine();
     }
 
     public function _createHtml() { // kept public for tests
@@ -166,24 +167,23 @@ class Line
                 $trimmed = ltrim($new_line, "< "); // trim first chevron and spaces from left side
                 $trimmed = rtrim($trimmed); // trim spaces from right side
                 $trimmed = substr($trimmed, 0, -1); // pop off one chevron from the right side
-                // log("trimmed=".$trimmed);
 
                 // recursively process the embedded line
                 $line = new Line($trimmed);
-                $line->_processLine();
-                $line->_createHtml();
                 $html = $line->getHtml();
 
+                // find the markup and replace it with html
                 $full_line = preg_replace("/".$new_line."/", implode("", $html), $full_line);
-                // log("result=$full_line");
             }
         }
         
         $this->text = $full_line;
-        // log($this->text);
     }
 
     public function getHtml() : array {
+        if (!count($this->html)) {
+            $this->_createHtml();
+        }
         return $this->html;
     }
 }

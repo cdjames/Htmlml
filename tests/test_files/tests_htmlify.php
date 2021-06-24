@@ -53,8 +53,6 @@ function test_line_processLine_success3() : bool {
 
 function test_line__createHtml_success() : bool {
     $line = new Line("a .nodrum .yermom #mya href=# data-src=mysong t=This is the text");
-    $level = $line->_processLine();
-    $line->_createHtml();
     $html = $line->getHtml();
 
     $success_html = "<a id='mya' class='nodrum yermom' href='#' data-src='mysong'>This is the text</a>";
@@ -63,8 +61,6 @@ function test_line__createHtml_success() : bool {
 
 function test_line__createHtml_embedded_tags_success() : bool {
     $line = new Line("h2 t=It seems to have worked. <i t=your file> should now be at < a .cool href=google.com t=the url>");
-    $level = $line->_processLine();
-    $line->_createHtml();
     $html = $line->getHtml();
 
     $success_html = "<h2>It seems to have worked. <i>your file</i> should now be at <a class='cool' href='google.com'>the url</a></h2>";
@@ -72,9 +68,7 @@ function test_line__createHtml_embedded_tags_success() : bool {
 }
 
 function test_line__createHtml_embedded_tags_success2() : bool {
-    $line = new Line("h2 t=It seems to have worked. <i t=your <b t=file>> should now be at < a .cool href=google.com t=the url>");
-    $level = $line->_processLine();
-    $line->_createHtml();
+    $line = new Line("h2 t=It seems to have worked. <i t=your <b t=file>> should now be at <a .cool href=google.com t=the url>");
     $html = $line->getHtml();
 
     $success_html = "<h2>It seems to have worked. <i>your <b>file</b></i> should now be at <a class='cool' href='google.com'>the url</a></h2>";
