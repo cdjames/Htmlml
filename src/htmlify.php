@@ -9,7 +9,7 @@ const SQUOTE = "'";
 const START_TAG_OPEN = "<";
 const END_TAG_OPEN = "</";
 const TAG_CLOSE = ">";
-const TESTING = 1;
+const TESTING = 0;
 
 function log_print_r($item) {
     if (TESTING === 1) {
@@ -192,58 +192,60 @@ class Line
     }
 }
 
-class Node 
-{
-    public $line;
-    public $children;
-    private $parent;
-
-    public function __construct($line, &$parent=null) {
-        $this->line = $line;
-        $this->parent = $parent;
-        $this->children = [];
-    }
-
-    public function addChild($node) {
-        $this->children []= $node;
-    }
-    
-    public function hasChildren() : bool {
-        return (bool)count($this->children);
-    }
-
-    public function getParent() {
-        return $parent;
-    }
-}
-
 class Htmlify
 {
     private $raw_block;
-    private $openings;
-    private $endings;
     private $html;
     private $level;
-    private $top_node;
+    private $stack;
     const LINE_DELIM = ",,,";
 
     public function __construct(string $raw_block) {
         $this->raw_block = $raw_block;
-        $this->openings = array(array());
-        $this->endings = array(array());
         $this->html = "";
         $this->level = 0;
-        $this->top_node = new Node(null);
+        $this->stack = [];
+    }
+
+    public function _assembleHtml() {
+        // Assemble html:
+        $html = "";
+        $level = -1;
+        while (count($this->stack) > 0) {
+            // Pop off element
+            $top = array_pop($this->stack);
+            // log("top: ".$top->getHtml()[0]);
+            // log_print_r($top);
+            if ($level == -1) {
+                // Process top element completely
+                $level = $top->getLevel();
+                $html = implode("", $top->getHtml());
+                // log("first: ".$html);
+            } else {
+                // Pop off next element and wrap previous if level is lower, otherwise concat 
+                $top_level = $top->getLevel();
+                if ($top_level < $level) {
+                    $top_html = $top->getHtml();
+                    // wrap
+                    $html = $top_html[0].$html.$top_html[1];
+                    // log("wrap: ".$html);
+                } else {
+                    // concatanate
+                    $html .= implode("", $top->getHtml());
+                }
+                $level = $top_level;
+            }
+        }   
+        $this->html .= $html;
+        // log("assemble:");
+        // log_print_r($this->html);
     }
 
     public function _processBlock() {
-        $current_node = &$this->top_node;
-        $this_node = null;
         $current_level = -1;
-        $deepest_level = -1;
         // separate into separate lines
         $lines = explode(self::LINE_DELIM, $this->raw_block);
-        log_print_r($lines);
+        // log_print_r($lines);
         // check size and operate on each line
         foreach ($lines as $text) {
             $text = trim($text, "\n");
@@ -255,25 +257,7 @@ class Htmlify
             // get leading spaces to determine level
             $level = $line->getLevel();
             // log($level);
-            
-            if ($level == $current_level) {
-                $this_node = new Node($line, $current_node);
-                $current_node->addChild($this_node);
-                log("equal");
-            } else if ($level > $current_level) {
-                $current_level = $level;
-                $this_node = new Node($line, $current_node);
-                $current_node->addChild($this_node);
-                $current_node = &$this_node;
-                log("gt");
-            } else { // less than
-                $current_level = $level;
-                $current_node = $current_node->getParent();
-                $this_node = new Node($line, $current_node);
-                $current_node->addChild($this_node);
-                log("lt");
-            }
-            // add line to current node depending on level
+            // add line to stack depending on level
             /*
             div .toplevel
              div .nextlevel #main
@@ -281,64 +265,39 @@ class Htmlify
              div .anotherlevel
               p t=other text
             =>
-            format:
-                line: Line(), children: []
-                node0 = line: div .toplevel, children: [node1, node3]
-                node1 = line: div .nextlevel #main, children: [node2]
-                node2 = line: span t=some text, children: []
-                node3 = line: div .anotherlevel, children: [node4]
-                node4 = line: p t=other text, children: []
-            */  
-                
-            // save deepest level
-            if ($current_level > $deepest_level)
-            {
-                $deepest_level = $current_level;
+            Stack:
+                check level
+                if greater than or equal to current, throw the Line on the stack
+                if less than current (or last line), process stack up until that point
+            Assemble html:
+                Pop off element and process completely
+                Pop off next element and wrap previous if level is lower, otherwise concat    
+            */ 
+            if ($level >= $current_level) {
+                $this->stack []= $line;
+                // log("gt equal");
+            } else { // less than
+                $this->_assembleHtml();
+                $this->stack []= $line;
+                // log("lt");
             }
+            $current_level = $level; 
         }
-        log_print_r($this->top_node);
 
+        // if done and still item on stack, assemble the rest
+        if (count($this->stack)) {
+            $this->_assembleHtml();
+        }
+        // log("html:");
+        // log_print_r($this->html);
     }
 
-    public function _createHtml() {
-        /*
-            div .toplevel
-             div .nextlevel #main
-              span t=some text
-             div .anotherlevel
-              p t=other text
-            =>
-            format:
-            line: Line(), children: []
-            node0 = line: div .toplevel, children: [node1, node3]
-            node1 = line: div .nextlevel #main, children: [node2]
-            node2 = line: span t=some text, children: []
-            node3 = line: div .anotherlevel, children: [node4]
-            node4 = line: p t=other text, children: []
-        */
-
-        // Walk to lowest level and assemble from there
-        /*
-            if (no children)
-                return assembled html
-            else
-                for all node0 children
-                    thislevel += recursiveCall(child) 
-                wrap all with this level
-                return this level assembled html
-        */
+    public function getHtml() : string {
+        if (!strlen($this->html)) {
+            $this->_processBlock();
+        }
+        return $this->html;
     }
-}
-
-function htmlify(string $markup)
-{
-    // split on line delimiter '>'
-
-    // check size and operate on each line
-
-        // look for text by splitting on "'"
-
-        // get leading spaces to determine level
 }
 
 $no_path_ext = "mysong";

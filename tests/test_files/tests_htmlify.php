@@ -1,7 +1,6 @@
 <?php
 use \htmlify\Line;
 use \htmlify\Htmlify;
-use \htmlify\Node;
 use \Tests\TestSuite;
 use \Tests\en_mode;
 use function \Tests\Assertions\assert_equal;
@@ -77,33 +76,34 @@ function test_line__createHtml_embedded_tags_success2() : bool {
     return assert_equal(implode("", $html), $success_html);
 }
 
-function test_node_constructor() : bool {
-    $node = new Node(null);
-
-    return true;
-}
-
-function test_node_constructor_with_parent() : bool {
-    $node = new Node(null);
-    $node2 = new Node(null,$node);
-
-    return true;
-}
-
 function test_htmlify_constructor() : bool {
     $htmlify = new Htmlify("text");
-
+    
     return true;
 }
 
-function test_htmlify_processBlock() : bool {
+function test_htmlify_success() : bool {
     $raw_text = 
-"
+    "
 div .mydiv,,,
- p t=some text";
+ p t=some text,,,
+div #another";
     $htmlify = new Htmlify($raw_text);
-    $htmlify->_processBlock();
-    return true;
+    $html = $htmlify->getHtml();
+    $success_html = "<div class='mydiv'><p>some text</p></div><div id='another'></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_success2() : bool {
+    $raw_text = 
+    "
+div .mydiv,,,
+ p .super t=some text,,,
+div #another t=<span t=my span>";
+    $htmlify = new Htmlify($raw_text);
+    $html = $htmlify->getHtml();
+    $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span>my span</span></div>";
+    return assert_equal($html, $success_html);
 }
 
 /*** run test suite from current directory 
