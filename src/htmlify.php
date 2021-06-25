@@ -187,7 +187,7 @@ class Line
         return $this->html;
     }
 
-    public function getLevel() : array {
+    public function getLevel() : int {
         return $this->level;
     }
 }
@@ -237,34 +237,67 @@ class Htmlify
     }
 
     public function _processBlock() {
-        $tn = &$this->top_node;
+        $current_node = &$this->top_node;
+        $this_node = null;
+        $current_level = -1;
+        $deepest_level = -1;
         // separate into separate lines
-        $lines = explode(self.LINE_DELIM, $this->raw_block);
+        $lines = explode(self::LINE_DELIM, $this->raw_block);
         log_print_r($lines);
         // check size and operate on each line
-            
+        foreach ($lines as $text) {
+            $text = trim($text, "\n");
+            // log($text);
             // create a Line object
-
+            $line = new Line($text);
+            // log_print_r($line);
+            
             // get leading spaces to determine level
-
+            $level = $line->getLevel();
+            // log($level);
+            
+            if ($level == $current_level) {
+                $this_node = new Node($line, $current_node);
+                $current_node->addChild($this_node);
+                log("equal");
+            } else if ($level > $current_level) {
+                $current_level = $level;
+                $this_node = new Node($line, $current_node);
+                $current_node->addChild($this_node);
+                $current_node = &$this_node;
+                log("gt");
+            } else { // less than
+                $current_level = $level;
+                $current_node = $current_node->getParent();
+                $this_node = new Node($line, $current_node);
+                $current_node->addChild($this_node);
+                log("lt");
+            }
             // add line to current node depending on level
             /*
-                div .toplevel
-                 div .nextlevel #main
-                  span t=some text
-                 div .anotherlevel
-                  p t=other text
-                =>
-                format:
+            div .toplevel
+             div .nextlevel #main
+              span t=some text
+             div .anotherlevel
+              p t=other text
+            =>
+            format:
                 line: Line(), children: []
                 node0 = line: div .toplevel, children: [node1, node3]
                 node1 = line: div .nextlevel #main, children: [node2]
                 node2 = line: span t=some text, children: []
                 node3 = line: div .anotherlevel, children: [node4]
                 node4 = line: p t=other text, children: []
-            */
-
+            */  
+                
             // save deepest level
+            if ($current_level > $deepest_level)
+            {
+                $deepest_level = $current_level;
+            }
+        }
+        log_print_r($this->top_node);
+
     }
 
     public function _createHtml() {

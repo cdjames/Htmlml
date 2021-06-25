@@ -97,7 +97,11 @@ function test_htmlify_constructor() : bool {
 }
 
 function test_htmlify_processBlock() : bool {
-    $htmlify = new Htmlify("text");
+    $raw_text = 
+"
+div .mydiv,,,
+ p t=some text";
+    $htmlify = new Htmlify($raw_text);
     $htmlify->_processBlock();
     return true;
 }
