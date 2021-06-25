@@ -1,4 +1,4 @@
-# Htmlify
+# Htmlml
 Create html from markup
 
 ## Use case
@@ -41,8 +41,8 @@ div #another
 2. Create an object and get your html
 
 ```
-$htmlified = new Htmlify($markup);
-$html = $htmlified->getHtml();
+$htmlmled = new Htmlml($markup);
+$html = $htmlmled->getHtml();
 ```
 
 ## Markup format
@@ -95,8 +95,8 @@ Would be translated to:
 You can change the line delimiter ("\n") and/or the text key ("tx="):
 
 ```
-$htmlified = new Htmlify($markup, "...", "t=");
-$html = $htmlified->getHtml();
+$htmlmled = new Htmlml($markup, "...", "t=");
+$html = $htmlmled->getHtml();
 ```
 
 In this case, `$markup` would look something like this:
@@ -108,7 +108,7 @@ div #another...
   a href=google.com t=google"
 ```
 
-If you only want to change the text delimiter, just use `Htmlify::LINE_DELIM` (or "\n") as the second parameter.
+If you only want to change the text delimiter, just use `Htmlml::LINE_DELIM` (or "\n") as the second parameter.
 
 ## Limitations
 Currently, your markup string can't contain actual tabs (spaces only).

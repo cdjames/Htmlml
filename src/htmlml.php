@@ -1,5 +1,5 @@
 <?php
-namespace htmlify;
+namespace htmlml;
 
 const SPACE = " ";
 const PERIOD = ".";
@@ -194,7 +194,7 @@ class Line
     }
 }
 
-class Htmlify
+class Htmlml
 {
     private $raw_block;
     private $html;

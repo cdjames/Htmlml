@@ -1,12 +1,12 @@
 <?php
-use \htmlify\Line;
-use \htmlify\Htmlify;
+use \htmlml\Line;
+use \htmlml\Htmlml;
 use \KissTests\TestSuite;
 use \KissTests\en_mode;
 use function \KissTests\Assertions\assert_equal;
 use function \KissTests\Assertions\assert_exception;
 require_once(dirname(__DIR__, 1)."/submodules/KissTests/kiss_tests.php"); // test framework
-require_once(dirname(__DIR__, 1)."/src/htmlify.php"); // functions to test
+require_once(dirname(__DIR__, 1)."/src/htmlml.php"); // functions to test
 
 /*** string tests ***/
 
@@ -29,8 +29,8 @@ function test_line_processAttribute_success2() : bool {
 
 function test_line_processAttribute_exception() : bool {
     $line = new Line("");
-    return assert_exception(dirname(__DIR__, 1)."/src/htmlify.php", 
-                                                '\htmlify\Line::_processAttribute', 
+    return assert_exception(dirname(__DIR__, 1)."/src/htmlml.php", 
+                                                '\htmlml\Line::_processAttribute', 
                                                 array("ref0"));
 }
 
@@ -85,7 +85,7 @@ function test_line__createHtml_embedded_tags_success2() : bool {
 }
 
 function test_htmlify_constructor() : bool {
-    $htmlify = new Htmlify("text");
+    $htmlml = new Htmlml("text");
     
     return true;
 }
@@ -96,8 +96,8 @@ function test_htmlify_success() : bool {
 div .mydiv
  p t=some text
 div #another";
-    $htmlify = new Htmlify($raw_text);
-    $html = $htmlify->getHtml();
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
     $success_html = "<div class='mydiv'><p>some text</p></div><div id='another'></div>";
     return assert_equal($html, $success_html);
 }
@@ -110,8 +110,8 @@ div .mydiv
 div #another
  span
   a href=nc.collinjam.es t=nextcloud";
-    $htmlify = new Htmlify($raw_text);
-    $html = $htmlify->getHtml();
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
     $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='nc.collinjam.es'>nextcloud</a></span></div>";
     return assert_equal($html, $success_html);
 }
@@ -122,8 +122,8 @@ function test_htmlify_custom_delim_success() : bool {
 div .mydiv,,,
  p .super t=some text,,,
 div #another t=<span t=my span>"; //works but not recommended style
-    $htmlify = new Htmlify($raw_text, ",,,");
-    $html = $htmlify->getHtml();
+    $htmlml = new Htmlml($raw_text, ",,,");
+    $html = $htmlml->getHtml();
     $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span>my span</span></div>";
     return assert_equal($html, $success_html);
 }
@@ -136,8 +136,8 @@ div .mydiv
 div #another
  span
   a href=nc.collinjam.es tx=nextcloud";
-    $htmlify = new Htmlify($raw_text, Htmlify::LINE_DELIM, 'tx=');
-    $html = $htmlify->getHtml();
+    $htmlml = new Htmlml($raw_text, Htmlml::LINE_DELIM, 'tx=');
+    $html = $htmlml->getHtml();
     $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='nc.collinjam.es'>nextcloud</a></span></div>";
     return assert_equal($html, $success_html);
 }
@@ -150,8 +150,8 @@ div .mydiv...
 div #another...
  span...
   a href=nc.collinjam.es tx=nextcloud";
-    $htmlify = new Htmlify($raw_text, '...', 'tx=');
-    $html = $htmlify->getHtml();
+    $htmlml = new Htmlml($raw_text, '...', 'tx=');
+    $html = $htmlml->getHtml();
     $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='nc.collinjam.es'>nextcloud</a></span></div>";
     return assert_equal($html, $success_html);
 }
@@ -164,8 +164,8 @@ function test_htmlify_tabs_success() : bool {
     div #another
         span
             a href=nc.collinjam.es t=nextcloud";
-    $htmlify = new Htmlify($raw_text);
-    $html = $htmlify->getHtml();
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
     $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='nc.collinjam.es'>nextcloud</a></span></div>";
     return assert_equal($html, $success_html);
 }
