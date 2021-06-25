@@ -99,10 +99,24 @@ function test_htmlify_success2() : bool {
     "
 div .mydiv,,,
  p .super t=some text,,,
-div #another t=<span t=my span>";
+div #another t=<span t=my span>"; //works but not recommended style
     $htmlify = new Htmlify($raw_text);
     $html = $htmlify->getHtml();
     $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span>my span</span></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_success3() : bool {
+    $raw_text = 
+    "
+div .mydiv,,,
+ p .super t=some text,,,
+div #another
+ span
+  a href=nc.collinjam.es t=nextcloud";
+    $htmlify = new Htmlify($raw_text);
+    $html = $htmlify->getHtml();
+    $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='nc.collinjam.es'>nextcloud</a></span></div>";
     return assert_equal($html, $success_html);
 }
 
