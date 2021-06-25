@@ -36,11 +36,12 @@ class Line
     private $attributes;
     private $text;
     private $html;
+    private $text_delim;
     const TXT_DELIM = "t=";
     const SPACE_PTRN = "/^\s+/";
     const EMBEDDED_TAG_PTRN = "/<\s*?.*?>+/";
 
-    public function __construct(string $raw_line)
+    public function __construct(string $raw_line, string $text_delim = self::TXT_DELIM)
     {
         $this->raw_line = rtrim($raw_line); // no need to keep spaces at the end
         $this->level = 0;
@@ -50,6 +51,7 @@ class Line
         $this->attributes = [];
         $this->text = "";
         $this->html = [];
+        $this->text_delim = $text_delim;
         $this->_processLine();
     }
 
@@ -108,7 +110,7 @@ class Line
     public function _processLine() : int { // kept public for tests
         /*  a.nodrum href=# data-src=mysong 'mysong' */
         // look for text by splitting on "text="
-        $txt_parts = explode(self::TXT_DELIM, $this->raw_line, 2);
+        $txt_parts = explode($this->text_delim, $this->raw_line, 2);
         // log_print_r($txt_parts);
         if (count($txt_parts) > 1) {
             $this->_processText($txt_parts[1]);
@@ -198,13 +200,19 @@ class Htmlify
     private $html;
     private $level;
     private $stack;
-    const LINE_DELIM = ",,,";
+    private $delim;
+    private $txt_delim;
+    const LINE_DELIM = "\n";
 
-    public function __construct(string $raw_block) {
+    public function __construct(string $raw_block, 
+                                string $delim = self::LINE_DELIM,
+                                string $txt_delim = Line::TXT_DELIM) {
         $this->raw_block = $raw_block;
         $this->html = "";
         $this->level = 0;
         $this->stack = [];
+        $this->delim = $delim;
+        $this->txt_delim = $txt_delim;
     }
 
     public function _assembleHtml() {
@@ -244,14 +252,17 @@ class Htmlify
     public function _processBlock() {
         $current_level = -1;
         // separate into separate lines
-        $lines = explode(self::LINE_DELIM, $this->raw_block);
+        $lines = explode($this->delim, $this->raw_block);
         // log_print_r($lines);
         // check size and operate on each line
         foreach ($lines as $text) {
             $text = trim($text, "\n");
+            if (!strlen($text)) {
+                continue; // no content, so skip to next line
+            }
             // log($text);
             // create a Line object
-            $line = new Line($text);
+            $line = new Line($text, $this->txt_delim);
             // log_print_r($line);
             
             // get leading spaces to determine level

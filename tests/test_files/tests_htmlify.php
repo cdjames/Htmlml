@@ -60,6 +60,14 @@ function test_line__createHtml_success() : bool {
     return assert_equal(implode("", $html), $success_html);
 }
 
+function test_line_custom_delim_success() : bool {
+    $line = new Line("a .nodrum .yermom #mya href=# data-src=mysong txt=This is the text", "txt=");
+    $html = $line->getHtml();
+
+    $success_html = "<a id='mya' class='nodrum yermom' href='#' data-src='mysong'>This is the text</a>";
+    return assert_equal(implode("", $html), $success_html);
+}
+
 function test_line__createHtml_embedded_tags_success() : bool {
     $line = new Line("h2 t=It seems to have worked. <i t=your file> should now be at < a .cool href=google.com t=the url>");
     $html = $line->getHtml();
@@ -85,8 +93,8 @@ function test_htmlify_constructor() : bool {
 function test_htmlify_success() : bool {
     $raw_text = 
     "
-div .mydiv,,,
- p t=some text,,,
+div .mydiv
+ p t=some text
 div #another";
     $htmlify = new Htmlify($raw_text);
     $html = $htmlify->getHtml();
@@ -94,31 +102,61 @@ div #another";
     return assert_equal($html, $success_html);
 }
 
-function test_htmlify_success2() : bool {
+function test_htmlify_default_delims_success() : bool {
     $raw_text = 
     "
-div .mydiv,,,
- p .super t=some text,,,
-div #another t=<span t=my span>"; //works but not recommended style
-    $htmlify = new Htmlify($raw_text);
-    $html = $htmlify->getHtml();
-    $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span>my span</span></div>";
-    return assert_equal($html, $success_html);
-}
-
-function test_htmlify_success3() : bool {
-    $raw_text = 
-    "
-div .mydiv,,,
- p .super t=some text,,,
-div #another,,,
- span,,,
+div .mydiv
+ p .super t=some text
+div #another
+ span
   a href=nc.collinjam.es t=nextcloud";
     $htmlify = new Htmlify($raw_text);
     $html = $htmlify->getHtml();
     $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='nc.collinjam.es'>nextcloud</a></span></div>";
     return assert_equal($html, $success_html);
 }
+
+function test_htmlify_custom_delim_success() : bool {
+    $raw_text = 
+    "
+div .mydiv,,,
+ p .super t=some text,,,
+div #another t=<span t=my span>"; //works but not recommended style
+    $htmlify = new Htmlify($raw_text, ",,,");
+    $html = $htmlify->getHtml();
+    $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span>my span</span></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_custom_text_delim_success() : bool {
+    $raw_text = 
+    "
+div .mydiv
+ p .super tx=some text
+div #another
+ span
+  a href=nc.collinjam.es tx=nextcloud";
+    $htmlify = new Htmlify($raw_text, Htmlify::LINE_DELIM, 'tx=');
+    $html = $htmlify->getHtml();
+    $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='nc.collinjam.es'>nextcloud</a></span></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_custom_line_and_text_delim_success() : bool {
+    $raw_text = 
+    "
+div .mydiv...
+ p .super tx=some text...
+div #another...
+ span...
+  a href=nc.collinjam.es tx=nextcloud";
+    $test = Htmlify::LINE_DELIM;
+    $htmlify = new Htmlify($raw_text, '...', 'tx=');
+    $html = $htmlify->getHtml();
+    $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='nc.collinjam.es'>nextcloud</a></span></div>";
+    return assert_equal($html, $success_html);
+}
+
 
 /*** run test suite from current directory 
  * TIP: put this code into its own file if using more than one
