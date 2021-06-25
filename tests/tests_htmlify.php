@@ -156,6 +156,19 @@ div #another...
     return assert_equal($html, $success_html);
 }
 
+function test_htmlify_tabs_success() : bool {
+    $raw_text = 
+    "
+    div .mydiv
+        p .super t=some text
+    div #another
+        span
+            a href=nc.collinjam.es t=nextcloud";
+    $htmlify = new Htmlify($raw_text);
+    $html = $htmlify->getHtml();
+    $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='nc.collinjam.es'>nextcloud</a></span></div>";
+    return assert_equal($html, $success_html);
+}
 
 /*** run test suite from current directory 
  * TIP: put this code into its own file if using more than one

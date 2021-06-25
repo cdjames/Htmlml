@@ -76,6 +76,14 @@ div #another
  span
   a href=google.com tx=google"
 ```
+or
+```
+div .mydiv
+    p .super tx=some text
+div #another
+    span
+        a href=google.com tx=google"
+```
 
 Would be translated to:
 
@@ -101,3 +109,6 @@ div #another...
 ```
 
 If you only want to change the text delimiter, just use `Htmlify::LINE_DELIM` (or "\n") as the second parameter.
+
+## Limitations
+Currently, your markup string can't contain actual tabs (spaces only).
