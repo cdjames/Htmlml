@@ -1,0 +1,3 @@
+[submodule "submodules/KissTests"]
+	path = submodules/KissTests
+	url = https://github.com/cdjames/KissTests

@@ -1,12 +1,12 @@
 <?php
 use \htmlify\Line;
 use \htmlify\Htmlify;
-use \Tests\TestSuite;
-use \Tests\en_mode;
-use function \Tests\Assertions\assert_equal;
-use function \Tests\Assertions\assert_exception;
-require_once(dirname(__DIR__, 1)."/tests.php"); // test framework
-require_once(dirname(__DIR__, 2)."/src/htmlify.php"); // functions to test
+use \KissTests\TestSuite;
+use \KissTests\en_mode;
+use function \KissTests\Assertions\assert_equal;
+use function \KissTests\Assertions\assert_exception;
+require_once(dirname(__DIR__, 1)."/submodules/KissTests/kiss_tests.php"); // test framework
+require_once(dirname(__DIR__, 1)."/src/htmlify.php"); // functions to test
 
 /*** string tests ***/
 
@@ -29,7 +29,7 @@ function test_line_processAttribute_success2() : bool {
 
 function test_line_processAttribute_exception() : bool {
     $line = new Line("");
-    return assert_exception(dirname(__DIR__, 2)."/src/htmlify.php", 
+    return assert_exception(dirname(__DIR__, 1)."/src/htmlify.php", 
                                                 '\htmlify\Line::_processAttribute', 
                                                 array("ref0"));
 }
