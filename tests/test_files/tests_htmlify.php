@@ -111,8 +111,8 @@ function test_htmlify_success3() : bool {
     "
 div .mydiv,,,
  p .super t=some text,,,
-div #another
- span
+div #another,,,
+ span,,,
   a href=nc.collinjam.es t=nextcloud";
     $htmlify = new Htmlify($raw_text);
     $html = $htmlify->getHtml();
