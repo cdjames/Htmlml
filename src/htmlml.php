@@ -39,7 +39,7 @@ class Line
     private $text_delim;
     const TXT_DELIM = "t=";
     const SPACE_PTRN = "/^\s+/";
-    const EMBEDDED_TAG_PTRN = "/<\s*?.*?>+/";
+    const EMBEDDED_TAG_PTRN = "^<\s*?.*?>+^";
 
     public function __construct(string $raw_line, string $text_delim = self::TXT_DELIM)
     {
@@ -175,7 +175,7 @@ class Line
                 $html = $line->getHtml();
 
                 // find the markup and replace it with html
-                $full_line = preg_replace("/".$new_line."/", implode("", $html), $full_line);
+                $full_line = preg_replace("^".$new_line."^", implode("", $html), $full_line);
             }
         }
         

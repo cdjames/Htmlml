@@ -170,6 +170,20 @@ function test_htmlify_tabs_success() : bool {
     return assert_equal($html, $success_html);
 }
 
+function test_htmlify_default_urls_success() : bool {
+    $raw_text = 
+    "
+div .mydiv
+ p .super t=some text
+div #another
+ span
+  a href=https://nc.collinjam.es/nc t=nextcloud/nc";
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
+    $success_html = "<div class='mydiv'><p class='super'>some text</p></div><div id='another'><span><a href='https://nc.collinjam.es/nc'>nextcloud/nc</a></span></div>";
+    return assert_equal($html, $success_html);
+}
+
 /*** run test suite from current directory 
  * TIP: put this code into its own file if using more than one
  * test file. Change __DIR__ if storing test files in different 
