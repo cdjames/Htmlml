@@ -184,6 +184,102 @@ div #another
     return assert_equal($html, $success_html);
 }
 
+function test_htmlify_equal_levels_success() : bool {
+    $raw_text = "
+    div #success_wrapper
+     div #success
+      h2 t=It seems to have worked. <i t=your files> should now be at <a href=https://yourfiles.com t=your files.>";
+    $raw_text .= "
+      h3 t=An email has been sent to your mom.";
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
+    $success_html = "<div id='success_wrapper'><div id='success'><h2>It seems to have worked. <i>your files</i> should now be at <a href='https://yourfiles.com'>your files.</a></h2><h3>An email has been sent to your mom.</h3></div></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_equal_levels_success2() : bool {
+    $raw_text = "
+    div #success_wrapper
+     div #success
+      h2 t=It seems to have worked. <i t=your files> should now be at <a href=https://yourfiles.com t=your files.>
+      h3 t=An email has been sent to your mom.
+      h4 t=hi.";
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
+    $success_html = "<div id='success_wrapper'><div id='success'><h2>It seems to have worked. <i>your files</i> should now be at <a href='https://yourfiles.com'>your files.</a></h2><h3>An email has been sent to your mom.</h3><h4>hi.</h4></div></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_equal_to_greater_success() : bool {
+    $raw_text = "
+    div #success_wrapper
+     div #success
+      h2 t=It seems to have worked. <i t=your files> should now be at <a href=https://yourfiles.com t=your files.>
+      h3 t=An email has been sent to your mom.
+      h4 t=hi.
+       span t=hi.";
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
+    $success_html = "<div id='success_wrapper'><div id='success'><h2>It seems to have worked. <i>your files</i> should now be at <a href='https://yourfiles.com'>your files.</a></h2><h3>An email has been sent to your mom.</h3><h4>hi.<span>hi.</span></h4></div></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_equal_to_greater_to_lesser_success() : bool {
+    $raw_text = "
+    div #success_wrapper
+     div #success
+      h2 t=It seems to have worked. <i t=your files> should now be at <a href=https://yourfiles.com t=your files.>
+      h3 t=An email has been sent to your mom.
+      h4 t=hi.
+       span t=hi.
+      div";
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
+    $success_html = "<div id='success_wrapper'><div id='success'><h2>It seems to have worked. <i>your files</i> should now be at <a href='https://yourfiles.com'>your files.</a></h2><h3>An email has been sent to your mom.</h3><h4>hi.<span>hi.</span></h4><div></div></div></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_equal_to_greater_to_lesser2_success() : bool {
+    $raw_text = "
+    div #success_wrapper
+     div #success
+      h2 t=It seems to have worked. <i t=your files> should now be at <a href=https://yourfiles.com t=your files.>
+      h3 t=An email has been sent to your mom.
+      h4 t=hi.
+       span t=hi.
+     div";
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
+    $success_html = "<div id='success_wrapper'><div id='success'><h2>It seems to have worked. <i>your files</i> should now be at <a href='https://yourfiles.com'>your files.</a></h2><h3>An email has been sent to your mom.</h3><h4>hi.<span>hi.</span></h4></div><div></div></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_equal_to_greater_to_lesser3_success() : bool {
+    $raw_text = "
+    div #success_wrapper
+     div #success
+      h2 t=It seems to have worked. <i t=your files> should now be at <a href=https://yourfiles.com t=your files.>
+      h3 t=An email has been sent to your mom.
+      h4 t=hi.
+       span t=hi.
+    div";
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
+    $success_html = "<div id='success_wrapper'><div id='success'><h2>It seems to have worked. <i>your files</i> should now be at <a href='https://yourfiles.com'>your files.</a></h2><h3>An email has been sent to your mom.</h3><h4>hi.<span>hi.</span></h4></div></div><div></div>";
+    return assert_equal($html, $success_html);
+}
+
+function test_htmlify_all_equal_success() : bool {
+    $raw_text = "
+      h2 t=It seems to have worked. <i t=your files> should now be at <a href=https://yourfiles.com t=your files.>
+      h3 t=An email has been sent to your mom.
+      h4 t=hi.";
+    $htmlml = new Htmlml($raw_text);
+    $html = $htmlml->getHtml();
+    $success_html = "<h2>It seems to have worked. <i>your files</i> should now be at <a href='https://yourfiles.com'>your files.</a></h2><h3>An email has been sent to your mom.</h3><h4>hi.</h4>";
+    return assert_equal($html, $success_html);
+}
+
 /*** run test suite from current directory 
  * TIP: put this code into its own file if using more than one
  * test file. Change __DIR__ if storing test files in different 

@@ -216,34 +216,58 @@ class Htmlml
     }
 
     public function _assembleHtml() {
-        // Assemble html:
+        /* Assemble html, starting from first element:
+         *            $html                             $closing_tags
+         * div   ->   <div>                             </div>
+         *  div1  ->  <div><div1>                       </div>, </div1>
+         *  div2  ->  <div><div1></div1><div2>          </div>, </div2>
+         *   div3 ->  <div><div1></div1><div2><div3>    </div>, </div2>, </div3>
+         * div4   ->  <div><div1></div1><div2><div3></div3></div2></div><div4></div4>
+         * 
+         */
+        $closing_tags = [];
         $html = "";
         $level = -1;
+        $lowest = -1;
         while (count($this->stack) > 0) {
             // Pop off element
             $top = array_pop($this->stack);
-            // log("top: ".$top->getHtml()[0]);
-            // log_print_r($top);
-            if ($level == -1) {
-                // Process top element completely
-                $level = $top->getLevel();
-                $html = implode("", $top->getHtml());
-                // log("first: ".$html);
-            } else {
-                // Pop off next element and wrap previous if level is lower, otherwise concat 
-                $top_level = $top->getLevel();
-                if ($top_level < $level) {
-                    $top_html = $top->getHtml();
-                    // wrap
-                    $html = $top_html[0].$html.$top_html[1];
-                    // log("wrap: ".$html);
-                } else {
-                    // concatanate
-                    $html .= implode("", $top->getHtml());
+            $top_level = $top->getLevel();
+            $top_html = $top->getHtml();
+
+            if ($top_level < $level) {
+                $num_levels = $level - $top_level;
+                // add num_levels+1 closing tags 
+                // (...<ul><li>) </li> </ul>
+                for ($i=$num_levels; $i >= 0 ; $i--) { 
+                    // grab top tag on stack
+                    $top_closing_tag = array_pop($closing_tags);
+                    // append
+                    $html .= $top_closing_tag;
                 }
-                $level = $top_level;
+                // concatanate: (...<ul><li>) </li> </ul> <ul>
+                $html .= $top_html[0];
+                // log("wrap: ".$html);
+            } elseif ($top_level == $level) {
+                // grab top tag on stack
+                $top_closing_tag = array_pop($closing_tags);
+                // concatanate: (...<li>) </li> <li>
+                $html .= $top_closing_tag . $top_html[0];
+            } else { // greater than
+                // concatanate: (...<li>) <li>
+                $html .= $top_html[0];
             }
+            $closing_tags []= $top_html[1];
+            $level = $top_level;
         }   
+
+        // append the remaining closing tags
+        while (count($closing_tags) > 0) {
+            // grab top tag on stack
+            $top_closing_tag = array_pop($closing_tags);
+            $html .= $top_closing_tag;
+        }
+
         $this->html .= $html;
         // log("assemble:");
         // log_print_r($this->html);
@@ -264,35 +288,8 @@ class Htmlml
             // create a Line object
             $line = new Line($text, $this->txt_delim);
             // log_print_r($line);
-            
-            // get leading spaces to determine level
-            $level = $line->getLevel();
-            // log($level);
-            // add line to stack depending on level
-            /*
-            div .toplevel
-             div .nextlevel #main
-              span t=some text
-             div .anotherlevel
-              p t=other text
-            =>
-            Stack:
-                check level
-                if greater than or equal to current, throw the Line on the stack
-                if less than current (or last line), process stack up until that point
-            Assemble html:
-                Pop off element and process completely
-                Pop off next element and wrap previous if level is lower, otherwise concat    
-            */ 
-            if ($level >= $current_level) {
-                $this->stack []= $line;
-                // log("gt equal");
-            } else { // less than
-                $this->_assembleHtml();
-                $this->stack []= $line;
-                // log("lt");
-            }
-            $current_level = $level; 
+
+            array_unshift($this->stack, $line);
         }
 
         // if done and still item on stack, assemble the rest
