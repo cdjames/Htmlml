@@ -229,14 +229,33 @@ class Htmlml
         $html = "";
         $level = -1;
         $lowest = -1;
-        while (count($this->stack) > 0) {
-            // Pop off element
-            $top = array_pop($this->stack);
-            $top_level = $top->getLevel();
-            $top_html = $top->getHtml();
+        $lines = explode($this->delim, $this->raw_block);
+        
+        // abort if no content
+        if (!count($lines)) {
+            throw new Exception("No html content");
+        }
 
-            if ($top_level < $level) {
-                $num_levels = $level - $top_level;
+        // operate on each line in order, top to bottom
+        foreach ($lines as $text) {
+            $text = trim($text, "\n");
+            if (!strlen($text)) {
+                continue; // no content, so skip to next line
+            }
+ 
+            // create a Line object
+            $line = new Line($text, $this->txt_delim);
+
+            // get the level and html (array)
+            $line_level = $line->getLevel();
+            $line_html = $line->getHtml();
+
+            if ($line_level < $level) {
+                /* lower depth:
+                 *   li
+                 *  ul
+                 */
+                $num_levels = $level - $line_level;
                 // add num_levels+1 closing tags 
                 // (...<ul><li>) </li> </ul>
                 for ($i=$num_levels; $i >= 0 ; $i--) { 
@@ -246,19 +265,29 @@ class Htmlml
                     $html .= $top_closing_tag;
                 }
                 // concatanate: (...<ul><li>) </li> </ul> <ul>
-                $html .= $top_html[0];
+                $html .= $line_html[0];
                 // log("wrap: ".$html);
-            } elseif ($top_level == $level) {
+            } elseif ($line_level == $level) {
+                /* equal depth:
+                 *   li
+                 *   li
+                 */
                 // grab top tag on stack
                 $top_closing_tag = array_pop($closing_tags);
                 // concatanate: (...<li>) </li> <li>
-                $html .= $top_closing_tag . $top_html[0];
+                $html .= $top_closing_tag . $line_html[0];
             } else { // greater than
-                // concatanate: (...<li>) <li>
-                $html .= $top_html[0];
+                /* greater depth:
+                 *   li
+                 *    span
+                 */
+                // concatanate: (...<li>) <span>
+                $html .= $line_html[0];
             }
-            $closing_tags []= $top_html[1];
-            $level = $top_level;
+            // push closing tag to top of stack
+            $closing_tags []= $line_html[1];
+            // record level
+            $level = $line_level;
         }   
 
         // append the remaining closing tags
@@ -269,56 +298,14 @@ class Htmlml
         }
 
         $this->html .= $html;
-        // log("assemble:");
-        // log_print_r($this->html);
-    }
-
-    public function _processBlock() {
-        $current_level = -1;
-        // separate into separate lines
-        $lines = explode($this->delim, $this->raw_block);
-        // log_print_r($lines);
-        // check size and operate on each line
-        foreach ($lines as $text) {
-            $text = trim($text, "\n");
-            if (!strlen($text)) {
-                continue; // no content, so skip to next line
-            }
-            // log($text);
-            // create a Line object
-            $line = new Line($text, $this->txt_delim);
-            // log_print_r($line);
-
-            array_unshift($this->stack, $line);
-        }
-
-        // if done and still item on stack, assemble the rest
-        if (count($this->stack)) {
-            $this->_assembleHtml();
-        }
-        // log("html:");
-        // log_print_r($this->html);
     }
 
     public function getHtml() : string {
         if (!strlen($this->html)) {
-            $this->_processBlock();
+            $this->_assembleHtml();
         }
         return $this->html;
     }
 }
-
-$no_path_ext = "mysong";
-$trackname = "mysong";
-$error_files = "mysong and yoursong";
-
-$var = "
-li.added ref=0 >
- a.nodrum href=# data-src=$no_path_ext text=$trackname";
-
-$var2 = "
-div#success_wrapper >
- div#error >
-  h2 text=Something went wrong! ".$error_files." were not uploaded because they were too large! Please try again or contact the server admin.";
 
 ?>
