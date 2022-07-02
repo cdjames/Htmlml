@@ -29,9 +29,14 @@ function test_line_processAttribute_success2() : bool {
 
 function test_line_processAttribute_exception() : bool {
     $line = new Line("");
-    return assert_exception(dirname(__DIR__, 1)."/src/htmlml.php", 
-                                                '\htmlml\Line::_processAttribute', 
-                                                array("ref0"));
+
+    try {
+        $line->_processAttribute("ref0");
+    } catch (Exception $e) {
+        return true;
+    }
+
+    return false;
 }
 
 function test_line_processLine_success() : bool {
