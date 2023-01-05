@@ -30,13 +30,7 @@ function test_line_processAttribute_success2() : bool {
 function test_line_processAttribute_exception() : bool {
     $line = new Line("");
 
-    try {
-        $line->_processAttribute("ref0");
-    } catch (Exception $e) {
-        return true;
-    }
-
-    return false;
+    return assert_exception([$line, "htmlml\Line::_processAttribute"], dirname(__DIR__, 1) . "/src/htmlml.php", ["ref0"], "bad attribute");
 }
 
 function test_line_processLine_success() : bool {

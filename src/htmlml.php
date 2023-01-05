@@ -233,7 +233,7 @@ class Htmlml
         
         // abort if no content
         if (!count($lines)) {
-            throw new Exception("No html content");
+            throw new \Exception("No html content");
         }
 
         // operate on each line in order, top to bottom
